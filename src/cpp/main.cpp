@@ -1,4 +1,6 @@
 #include "include/delivery_optimizer.hpp"
+#include <iostream>
+#include <iomanip> // For formatted output
 
 int main() {
     try {
@@ -19,11 +21,8 @@ int main() {
         // Create an instance of DeliveryOptimizer
         DeliveryOptimizer optimizer(locations);
 
-        // Compute the cost matrix
-        optimizer.computeCostMatrix();
-
-        // Retrieve and display the cost matrix
-        auto costMatrix = optimizer.getCostMatrix();
+        // Calculate and retrieve the cost matrix
+        auto costMatrix = optimizer.calculate_cost_matrix();
         std::cout << "Cost Matrix:" << std::endl;
         for (const auto& row : costMatrix) {
             for (double cost : row) {
@@ -32,13 +31,32 @@ int main() {
             std::cout << std::endl;
         }
 
-        // Find and display the optimal route
-        auto route = optimizer.findOptimalRoute();
-        std::cout << "Optimal Route: ";
-        for (int location : route) {
-            std::cout << location << " ";
+        // Configuration parameters for genetic algorithm
+        int population_size = 50;
+        int generations = 1000;
+        double mutation_rate = 0.05;
+        double crossover_rate = 0.7;
+
+        // Running the genetic algorithm
+        auto ga_route = optimizer.genetic_algorithm(costMatrix, population_size, generations, mutation_rate, crossover_rate);
+        std::cout << "Optimal Route by Genetic Algorithm: ";
+        for (int location : ga_route) {
+            std::cout << location << " -> ";
         }
-        std::cout << "Home" << std::endl; // Assuming the route ends where it started
+        std::cout << "End (GA)" << std::endl;
+
+        // Configuration parameters for simulated annealing
+        double start_temp = 10000.0;
+        double end_temp = 1.0;
+        double cooling_rate = 0.995;
+
+        // Running the simulated annealing
+        auto sa_route = optimizer.simulated_annealing(costMatrix, start_temp, end_temp, cooling_rate);
+        std::cout << "Optimal Route by Simulated Annealing: ";
+        for (int location : sa_route) {
+            std::cout << location << " -> ";
+        }
+        std::cout << "End (SA)" << std::endl;
 
     } catch (const std::exception& e) {
         // Handle any exceptions that might be thrown during the optimization process

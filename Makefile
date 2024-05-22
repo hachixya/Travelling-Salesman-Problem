@@ -37,6 +37,7 @@ $(BINDIR)%.o: $(SRCDIR)%.cpp
 clean:
 	$(RM) $(OBJ) $(PROG)
 	$(RM) $(CLEANEXTS)
+	rm -f bin/*
 
 # Save the source and header files
 save:
