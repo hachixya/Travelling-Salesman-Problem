@@ -14,10 +14,10 @@ void DeliveryOptimizer::load_delivery_locations(const std::vector<Location>& new
 
 // Computes the cost matrix for the current set of locations
 void DeliveryOptimizer::computeCostMatrix() {
-    int n = locations.size();
+    size_t n = locations.size();  // Use size_t for sizes
     costMatrix.resize(n, std::vector<double>(n, 0.0));
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
+    for (size_t i = 0; i < n; i++) {
+        for (size_t j = 0; j < n; j++) {
             if (i != j) {
                 costMatrix[i][j] = distance(i, j);
             } else {
@@ -34,64 +34,69 @@ std::vector<std::vector<double>> DeliveryOptimizer::calculate_cost_matrix() {
 
 // Calculates the geographical distance between two locations using their indices
 double DeliveryOptimizer::distance(int start, int end) const {
-    if (start < 0 || start >= static_cast<int>(locations.size()) || end < 0 || end >= static_cast<int>(locations.size())) {
-        throw std::out_of_range("Index out of range");
-    }
-
-    const double earthRadiusKm = 6371.0;
+    const double EARTH_RADIUS_KM = 6371.0;
     double lat1 = locations[start].latitude * M_PI / 180.0;
     double lon1 = locations[start].longitude * M_PI / 180.0;
     double lat2 = locations[end].latitude * M_PI / 180.0;
     double lon2 = locations[end].longitude * M_PI / 180.0;
 
-    double dLat = lat2 - lat1;
-    double dLon = lon2 - lon1;
+    double dlat = lat2 - lat1;
+    double dlon = lon2 - lon1;
 
-    double a = std::sin(dLat / 2) * std::sin(dLat / 2) +
-               std::cos(lat1) * std::cos(lat2) *
-               std::sin(dLon / 2) * std::sin(dLon / 2);
+    double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
+               std::cos(lat1) * std::cos(lat2) * std::sin(dlon / 2) * std::sin(dlon / 2);
     double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
-    return earthRadiusKm * c;
+    return EARTH_RADIUS_KM * c;
 }
 
-// Fitness function to calculate the route cost
+// Calculates the cost of a given route
 double DeliveryOptimizer::route_cost(const std::vector<int>& route, const std::vector<std::vector<double>>& costMatrix) const {
-    double cost = 0.0;
-    for (size_t i = 0; i < route.size() - 1; i++) {
-        cost += costMatrix[route[i]][route[i+1]];
+    double total_cost = 0.0;
+    for (size_t i = 0; i < route.size() - 1; ++i) {  // Use size_t for indices
+        total_cost += costMatrix[route[i]][route[i + 1]];
     }
-    cost += costMatrix[route.back()][route.front()]; // Return to start point
-    return cost;
+    total_cost += costMatrix[route.back()][route.front()]; // Return to the start
+    return total_cost;
 }
 
-// Genetic Algorithm for finding the optimal route
+// Genetic Algorithm to determine the optimal route
 std::vector<int> DeliveryOptimizer::genetic_algorithm(const std::vector<std::vector<double>>& costMatrix, int population_size, int generations, double mutation_rate, double crossover_rate) {
+    std::cout << "Starting genetic_algorithm" << std::endl;
+
     std::random_device rd;
     std::mt19937 gen(rd());
-    int n = costMatrix.size();
-    
+    size_t n = costMatrix.size();
+
     // Initialize population
     std::vector<std::vector<int>> population(population_size);
     for (auto& individual : population) {
         individual = random_permutation(n);
     }
 
+    //std::cout << "Initialized population with size: " << population.size() << std::endl;
+
     // Function to sort population by increasing route cost
     auto by_cost = [this, &costMatrix](const std::vector<int>& a, const std::vector<int>& b) {
         return this->route_cost(a, costMatrix) < this->route_cost(b, costMatrix);
     };
+
     for (int generation = 0; generation < generations; ++generation) {
+        //std::cout << "Generation: " << generation << std::endl;
+
         // Sort population based on their fitness (route cost)
         std::sort(population.begin(), population.end(), by_cost);
 
         // Selection - Top half survives
         population.resize(population_size / 2);
 
+        //std::cout << "Population resized to: " << population.size() << std::endl;
+
         // Crossover - Fill the population back to original size
+        size_t old_population_size = population.size();
         while (population.size() < static_cast<size_t>(population_size)) {
-            int parent1_idx = std::uniform_int_distribution<>(0, population.size() - 1)(gen);
-            int parent2_idx = std::uniform_int_distribution<>(0, population.size() - 1)(gen);
+            int parent1_idx = std::uniform_int_distribution<>(0, old_population_size - 1)(gen);
+            int parent2_idx = std::uniform_int_distribution<>(0, old_population_size - 1)(gen);
             auto& parent1 = population[parent1_idx];
             auto& parent2 = population[parent2_idx];
 
@@ -104,6 +109,10 @@ std::vector<int> DeliveryOptimizer::genetic_algorithm(const std::vector<std::vec
                 // Create child by combining genes from both parents
                 std::swap_ranges(child1.begin() + crossover_point, child1.end(), child2.begin() + crossover_point);
 
+                // Correct duplicates
+                fix_duplicates(child1);
+                fix_duplicates(child2);
+
                 population.push_back(child1);
                 if (population.size() < static_cast<size_t>(population_size)) {
                     population.push_back(child2);
@@ -114,20 +123,37 @@ std::vector<int> DeliveryOptimizer::genetic_algorithm(const std::vector<std::vec
         // Mutation
         for (auto& individual : population) {
             if (std::generate_canonical<double, 10>(gen) < mutation_rate) {
-                int swap_idx1 = std::uniform_int_distribution<>(0, n - 1)(gen);
-                int swap_idx2 = std::uniform_int_distribution<>(0, n - 1)(gen);
+                size_t swap_idx1 = std::uniform_int_distribution<>(0, n - 1)(gen);  // Use size_t
+                size_t swap_idx2 = std::uniform_int_distribution<>(0, n - 1)(gen);  // Use size_t
                 std::swap(individual[swap_idx1], individual[swap_idx2]);
             }
         }
+
+        // Debugging: Print the best route in the current generation
+        auto best_route = *std::min_element(population.begin(), population.end(), by_cost);
+        // std::cout << "Generation " << generation << " Best route: ";
+        // for (int location : best_route) {
+        //     std::cout << location << " ";
+        // }
+        // std::cout << "\nCost: " << route_cost(best_route, costMatrix) << std::endl;
     }
 
     // Return the best route from the last generation
-    return *std::min_element(population.begin(), population.end(), by_cost);
+    auto best_route = *std::min_element(population.begin(), population.end(), by_cost);
+
+    // Debugging: Print the best route and its cost
+    std::cout << "Best route: ";
+    for (int location : best_route) {
+        std::cout << location << " ";
+    }
+    std::cout << "\nCost: " << route_cost(best_route, costMatrix) << std::endl;
+
+    return best_route;
 }
 
 // Simulated Annealing to determine the optimal route
 std::vector<int> DeliveryOptimizer::simulated_annealing(const std::vector<std::vector<double>>& costMatrix, double start_temp, double end_temp, double cooling_rate) {
-    int n = costMatrix.size();
+    size_t n = costMatrix.size();
     auto current_route = random_permutation(n);
     auto best_route = current_route;
     double current_cost = route_cost(current_route, costMatrix);
@@ -138,7 +164,8 @@ std::vector<int> DeliveryOptimizer::simulated_annealing(const std::vector<std::v
     std::uniform_int_distribution<> dist(0, n - 1);
 
     while (temp > end_temp) {
-        int i = dist(rng), j = dist(rng);
+        size_t i = dist(rng);  // Use size_t
+        size_t j = dist(rng);  // Use size_t
         std::swap(current_route[i], current_route[j]);
         double new_cost = route_cost(current_route, costMatrix);
         if (new_cost < current_cost || exp((current_cost - new_cost) / temp) > std::generate_canonical<double, 10>(rng)) {
@@ -157,11 +184,30 @@ std::vector<int> DeliveryOptimizer::simulated_annealing(const std::vector<std::v
 }
 
 // Utility functions needed for genetic algorithm and simulated annealing
-std::vector<int> DeliveryOptimizer::random_permutation(int n) {
+std::vector<int> DeliveryOptimizer::random_permutation(size_t n) {  // Use size_t
     std::vector<int> perm(n);
     std::iota(perm.begin(), perm.end(), 0);
     std::shuffle(perm.begin(), perm.end(), std::mt19937{std::random_device{}()});
     return perm;
+}
+
+// Fix duplicates in the route generated by crossover
+void DeliveryOptimizer::fix_duplicates(std::vector<int>& route) {
+    std::unordered_set<int> visited;
+    for (size_t i = 0; i < route.size(); ++i) {  // Use size_t
+        if (visited.find(route[i]) != visited.end()) {
+            // Find a replacement
+            for (size_t j = 0; j < route.size(); ++j) {  // Use size_t
+                if (visited.find(j) == visited.end()) {
+                    route[i] = j;
+                    visited.insert(j);
+                    break;
+                }
+            }
+        } else {
+            visited.insert(route[i]);
+        }
+    }
 }
 
 // Getter for the cost matrix

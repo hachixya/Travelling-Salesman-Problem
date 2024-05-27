@@ -1,49 +1,54 @@
 # Compiler settings
-CXX := g++ -Wall -std=c++11
-# Copy for backup
-CP := cp -t
-# Deletion for clean
-RM := rm -f
+CXX = g++
+CXXFLAGS = -std=c++14 -O3 -Wall -shared -fPIC $(shell python3 -m pybind11 --includes) $(shell python3-config --includes --ldflags)
+CXXFLAGS_EXE = -std=c++14 -O3 -Wall
 
-# Directory initialization
-SRCDIR := ./src/cpp/
-BINDIR := ./bin/
-SAVEDIR := ./save/
+# Directories
+SRCDIR = ./src/cpp/
+PYBINDIR = ./src/cpp/
+BINDIR = ./bin/
+SAVEDIR = ./save/
 
 # File types to clean
-CLEANEXTS := *.o *~
+CLEANEXTS = *.o *~
 
 # File definitions
-SRC := $(wildcard $(SRCDIR)*.cpp)                        # All cpp files in the SRC directory
-OBJ := $(SRC:$(SRCDIR)%.cpp=$(BINDIR)%.o)               # Object files to be compiled
-HEAD := $(wildcard $(SRCDIR)*.hpp)                       # Header files
-PROG := $(BINDIR)delivery_optimizer                     # The executable program
+SRC_CPP = $(SRCDIR)optimizer.cpp $(SRCDIR)main.cpp           # C++ files for executable
+SRC_PYBIND = $(SRCDIR)optimizer.cpp $(SRCDIR)delivery_optimizer_pybind.cpp  # C++ files for pybind module
+HEAD = $(wildcard $(SRCDIR)include/*.hpp)
+TARGET = $(BINDIR)delivery_optimizer$(shell python3-config --extension-suffix)
+EXE = $(BINDIR)delivery_optimizer_exe
 
 # Default target
-all: $(PROG)
+all: $(TARGET) $(EXE)
 
-# Linking the program
-$(PROG): $(OBJ)
-	$(CXX) $^ -o $@
+# Building the pybind module
+$(TARGET): $(SRC_PYBIND) $(HEAD)
+	$(CXX) $(CXXFLAGS) $(SRC_PYBIND) -o $(TARGET)
 
-# Compiling source files into object files
-$(BINDIR)%.o: $(SRCDIR)%.cpp
-	$(CXX) -c $< -o $@
+# Building the executable
+$(EXE): $(SRC_CPP) $(HEAD)
+	$(CXX) $(CXXFLAGS_EXE) $(SRC_CPP) -o $(EXE)
 
 # Phony targets for cleanliness and backups
-.PHONY: clean save restore
+.PHONY: clean save restore test
 
 # Clean the object files and the executable
 clean:
-	$(RM) $(OBJ) $(PROG)
-	$(RM) $(CLEANEXTS)
-	rm -f bin/*
+	rm -f $(TARGET) $(EXE) $(CLEANEXTS) $(BINDIR)*.so $(BINDIR)*.pyc __pycache__ .pytest_cache -r
 
 # Save the source and header files
 save:
-	$(CP) $(SAVEDIR) $(SRC) $(HEAD)
+	cp $(SRC_CPP) $(SRC_PYBIND) $(HEAD) $(SAVEDIR)
 
 # Restore files from backup
 restore:
-	$(CP) $(SRCDIR) $(SAVEDIR)*
+	cp $(SAVEDIR)* $(SRCDIR)
 
+# Run tests
+test: $(TARGET)
+	PYTHONPATH=$(BINDIR) python3 -m pytest
+
+# Run python interface
+run: $(TARGET)
+	PYTHONPATH=$(BINDIR) python3 src/python/interface.py

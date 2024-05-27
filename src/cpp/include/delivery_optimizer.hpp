@@ -4,6 +4,8 @@
 #include <numeric>
 #include <vector>
 #include <string>
+#include <set> 
+#include <unordered_set>
 #include <stdexcept>  // For std::out_of_range exception
 #include <cmath>      // For mathematical operations, e.g., sin, cos
 #include <algorithm>  // For std algorithms
@@ -35,6 +37,8 @@ public:
     // Calculate the geographical distance between two locations
     double distance(int start, int end) const;
 
+    double route_cost(const std::vector<int>& route, const std::vector<std::vector<double>>& costMatrix) const;  // Calculates the cost of a given route
+
     // Genetic Algorithm for route optimization
     std::vector<int> genetic_algorithm(const std::vector<std::vector<double>>& costMatrix, int population_size, int generations, double mutation_rate, double crossover_rate);
 
@@ -55,6 +59,8 @@ private:
     std::vector<std::vector<double>> costMatrix;  // Stores the cost matrix between locations
 
     // Utility functions
-    std::vector<int> random_permutation(int n);  // Generates a random permutation of indices
-    double route_cost(const std::vector<int>& route, const std::vector<std::vector<double>>& costMatrix) const;  // Calculates the cost of a given route
+    std::vector<int> random_permutation(size_t n);  // Generates a random permutation of indices
+    
+    // New utility function to fix duplicates in the route
+    void fix_duplicates(std::vector<int>& route);
 };

@@ -38,12 +38,22 @@ int main() {
         double crossover_rate = 0.7;
 
         // Running the genetic algorithm
+        std::cout << "Calling genetic_algorithm" << std::endl;
         auto ga_route = optimizer.genetic_algorithm(costMatrix, population_size, generations, mutation_rate, crossover_rate);
         std::cout << "Optimal Route by Genetic Algorithm: ";
         for (int location : ga_route) {
             std::cout << location << " -> ";
         }
+        double ga_cost = optimizer.route_cost(ga_route, costMatrix);
         std::cout << "End (GA)" << std::endl;
+        std::cout << "Cost (GA): " << ga_cost << std::endl;
+
+        // Print individual segment costs for GA route
+        std::cout << "Individual segment costs (GA):" << std::endl;
+        for (size_t i = 0; i < ga_route.size() - 1; ++i) {
+            std::cout << costMatrix[ga_route[i]][ga_route[i + 1]] << " ";
+        }
+        std::cout << costMatrix[ga_route.back()][ga_route.front()] << std::endl;
 
         // Configuration parameters for simulated annealing
         double start_temp = 10000.0;
@@ -56,7 +66,16 @@ int main() {
         for (int location : sa_route) {
             std::cout << location << " -> ";
         }
+        double sa_cost = optimizer.route_cost(sa_route, costMatrix);
         std::cout << "End (SA)" << std::endl;
+        std::cout << "Cost (SA): " << sa_cost << std::endl;
+
+        // Print individual segment costs for SA route
+        std::cout << "Individual segment costs (SA):" << std::endl;
+        for (size_t i = 0; i < sa_route.size() - 1; ++i) {
+            std::cout << costMatrix[sa_route[i]][sa_route[i + 1]] << " ";
+        }
+        std::cout << costMatrix[sa_route.back()][sa_route.front()] << std::endl;
 
     } catch (const std::exception& e) {
         // Handle any exceptions that might be thrown during the optimization process
