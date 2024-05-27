@@ -37,7 +37,7 @@ $(EXE): $(SRC_CPP) $(HEAD)
 # Clean the object files and the executable
 clean:
 	rm -f $(TARGET) $(EXE) $(CLEANEXTS) $(BINDIR)/*
-	rm -rf __pycache__ .pytest_cache
+	rm -rf __pycache__ .pytest_cache 
 
 
 # Save the source and header files
@@ -55,3 +55,4 @@ test: $(TARGET)
 # Run python interface
 run: $(TARGET)
 	PYTHONPATH=$(BINDIR) python3 src/python/interface.py
+	firefox Optimized_Route.html

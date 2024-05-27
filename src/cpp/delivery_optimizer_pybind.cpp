@@ -19,5 +19,7 @@ PYBIND11_MODULE(delivery_optimizer, m) {
         .def("solveNearestNeighbor", &TSP::solveNearestNeighbor)
         .def("solveBruteForce", &TSP::solveBruteForce)
         .def("getSolutionDistance", &TSP::getSolutionDistance)
-        .def("writeSolution", &TSP::writeSolution);
+        .def("writeSolution", &TSP::writeSolution)
+        .def("getNumberOfCities", &TSP::getNumberOfCities)
+        .def("getCity", &TSP::getCity, py::return_value_policy::reference_internal);
 }

@@ -1,19 +1,20 @@
 #include "TSP.hpp"
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
 #include <csignal>
-#include <climits> // Include this header for INT_MAX
-#include <chrono>  // Include for measuring execution time
+#include <climits>
+#include <chrono>
 
 int done = 0;
 
-TSP::TSP(const char *filename) {
+TSP::TSP(const char* filename) {
     numCities = readFile(filename);
 }
 
-TSP::TSP(const TSP &source) {
+TSP::TSP(const TSP& source) {
     for (auto city : source.originalList) {
         originalList.push_back(new City(*city));
     }
@@ -28,7 +29,7 @@ TSP::~TSP() {
     solution.clear();
 }
 
-int TSP::readFile(const char *filename) {
+int TSP::readFile(const char* filename) {
     int added = 0;
     int id, x, y;
 
@@ -54,7 +55,7 @@ int TSP::readFile(const char *filename) {
     return added;
 }
 
-void TSP::writeSolution(const char *fileName) {
+void TSP::writeSolution(const char* fileName) {
     int distance = getSolutionDistance();
     std::ofstream file(fileName);
 
@@ -70,8 +71,6 @@ void TSP::writeSolution(const char *fileName) {
 }
 
 int TSP::solveBruteForce() {
-    if (numCities == 0) return 0;
-
     auto start = std::chrono::high_resolution_clock::now();
 
     int distance = 0;
@@ -100,7 +99,7 @@ int TSP::solveBruteForce() {
     return distance;
 }
 
-void TSP::bruteForce(std::deque<City*> &bestPath, int &minDistance, int citiesLeft) {
+void TSP::bruteForce(std::deque<City*>& bestPath, int& minDistance, int citiesLeft) {
     int currentDistance = 0;
     signal(SIGTERM, endOptimization);
 
@@ -137,7 +136,7 @@ int TSP::solveNearestNeighbor() {
         if (lastRun < bestStartDistance) {
             bestStartDistance = lastRun;
             std::cout << "Writing solution " << bestStartDistance << std::endl;
-            writeSolution(OUTPUT_FN);
+            writeSolution("nearest_neighbor_solution.txt");
         }
     }
 
@@ -145,7 +144,7 @@ int TSP::solveNearestNeighbor() {
     if (bestStartDistance > totalDistance) {
         bestStartDistance = totalDistance;
         std::cout << "Writing solution " << totalDistance << std::endl;
-        writeSolution(OUTPUT_FN);
+        writeSolution("nearest_neighbor_solution.txt");
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -292,7 +291,18 @@ void TSP::fixPositions() {
     }
 }
 
-void copyCityDeque(std::deque<City*> &source, std::deque<City*> &dest) {
+int TSP::getNumberOfCities() const {
+    return numCities;
+}
+
+City* TSP::getCity(int index) const {
+    if (index >= 0 && index < numCities) {
+        return solution[index];
+    }
+    return nullptr;
+}
+
+void copyCityDeque(std::deque<City*>& source, std::deque<City*>& dest) {
     int length = source.size();
     dest.clear();
     for (int i = 0; i < length; ++i) {
