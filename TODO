@@ -1,0 +1,6 @@
+[x]: Regarder la fonction distance nouvelle
+[~]: Regarder cette histoire de fichier cost_matrix.cpp
+[ ]: Refacto le fichier optimizer.cpp pour plus de clareté (ajouter notamment commentaire)
+[ ]: Parameterization: Allow passing parameters such as population size, mutation rate, and others through the constructor or dedicated setter methods to configure the optimization process without modifying the code.
+[ ]: Enhanced Error Handling: While basic error handling is included, consider expanding this to handle more specific scenarios that might occur, especially with invalid input data or edge cases in route optimization.
+[ ]: Logging and Debugging: Implement logging for key actions and decisions within the algorithms to facilitate debugging and performance tuning.
