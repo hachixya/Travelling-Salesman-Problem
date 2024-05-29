@@ -1,7 +1,5 @@
-import delivery_optimizer
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import numpy as np
 
 # Global variable to store the frames for animation
 frames = []
@@ -25,18 +23,6 @@ def update_visualization(distance, tsp):
     x_coords = [city.getX() for city in route]
     y_coords = [city.getY() for city in route]
     frames.append((x_coords, y_coords, [city.getId() for city in route], distance))
-
-def main():
-    print("Welcome to the TSP Optimizer")
-    dataset = input("Enter the TSP dataset file name (e.g., att48.tsp): ")
-
-    tsp = delivery_optimizer.TSP(dataset)
-    delivery_optimizer.setVisualizationCallback(update_visualization)
-
-    print("Solving TSP using Nearest Neighbor algorithm...")
-    tsp.solveNearestNeighbor()
-
-    animate_route(frames)
 
 def animate_route(frames):
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -71,11 +57,3 @@ def animate_route(frames):
     plt.ylabel("Y Coordinate")
     plt.grid(True)
     plt.show()
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("Program interrupted")
-    finally:
-        delivery_optimizer.setVisualizationCallback(None)

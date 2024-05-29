@@ -53,4 +53,4 @@ test: $(TARGET)
 
 # Run python interface
 run: $(TARGET)
-	PYTHONPATH=$(BINDIR) python3 src/python/interface.py
+	PYTHONPATH=$(BINDIR) python3 src/python/main.py
