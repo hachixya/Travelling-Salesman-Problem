@@ -38,7 +38,6 @@ $(EXE): $(SRC_CPP) $(HEAD)
 clean:
 	rm -f $(TARGET) $(EXE) $(CLEANEXTS) $(BINDIR)/*
 	rm -rf __pycache__ .pytest_cache ./src/python/__pycache__
-	rm *.html
 
 # Save the source and header files
 save:

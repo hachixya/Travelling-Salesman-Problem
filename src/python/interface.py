@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import folium
 import numpy as np
 
-def plot_route(cities, route, title="Optimized Route"):
+def plot_route(route, title="Optimized Route"):
     x_coords = [city.getX() for city in route]
     y_coords = [city.getY() for city in route]
     plt.figure(figsize=(10, 6))
@@ -19,7 +19,7 @@ def plot_route(cities, route, title="Optimized Route"):
 def update_visualization(distance, tsp):
     print(f"Updating visualization for distance: {distance}")
     route = [tsp.getCity(i) for i in range(tsp.getNumberOfCities())]
-    plot_route([tsp.getCity(i) for i in range(tsp.getNumberOfCities())], route, f"Optimized Route (Distance: {distance})")
+    plot_route(route, f"Optimized Route (Distance: {distance})")
 
 def main():
     print("Welcome to the TSP Optimizer")
@@ -31,8 +31,6 @@ def main():
     print("Solving TSP using Nearest Neighbor algorithm...")
     tsp.solveNearestNeighbor()
 
-    # Add animation to the visualization
-    
 if __name__ == "__main__":
     try:
         main()
