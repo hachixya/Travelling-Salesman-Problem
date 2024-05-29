@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
 int main(int argc, char *argv[]) {
     const char *defaultFile = "att48.tsp";
@@ -10,14 +11,17 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         std::cerr << "No filename provided. Defaulting to " << defaultFile << std::endl;
+        std::cerr << "Usage: " << argv[0] << " data/filename.tsp " << std::endl;
         filename = defaultFile;
     } else {
         filename = argv[1];
     }
 
+    std::string filepath = std::string("data/") + filename;
+
     std::srand(std::time(0));
 
-    TSP tsp(filename);
+    TSP tsp(filepath.c_str());
     tsp.solveNearestNeighbor();
 
     return 0;

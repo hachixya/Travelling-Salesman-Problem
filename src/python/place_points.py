@@ -1,5 +1,5 @@
+import os
 import matplotlib.pyplot as plt
-import numpy as np
 
 def onclick(event, points):
     if event.inaxes:
@@ -17,7 +17,8 @@ def place_points():
     plt.show()
     return points
 
-def save_points_to_tsp(points, filename="custom.tsp"):
+def save_points_to_tsp(points, filename="data/custom.tsp"):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as f:
         f.write("NAME : custom\n")
         f.write("COMMENT : Custom points\n")
@@ -32,4 +33,4 @@ def save_points_to_tsp(points, filename="custom.tsp"):
 if __name__ == "__main__":
     points = place_points()
     save_points_to_tsp(points)
-    print(f"Points saved to custom.tsp")
+    print(f"Points saved to data/custom.tsp")

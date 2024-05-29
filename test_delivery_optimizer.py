@@ -1,3 +1,4 @@
+import os
 import delivery_optimizer
 import pytest
 
@@ -24,14 +25,16 @@ tolerance = 1e-2
 ])
 def test_solve_nearest_neighbor(dataset, optimal):
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP(dataset)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     distance = tsp.solveNearestNeighbor()
     assert distance <= max_acceptable_distance(optimal), f"Distance {distance} exceeds acceptable limit {max_acceptable_distance(optimal)} for dataset {dataset}"
 
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
 def test_get_solution_distance(dataset):
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP(dataset)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     tsp.solveNearestNeighbor()
     distance = tsp.getSolutionDistance()
     assert distance > 0, "Solution distance should be greater than 0"
@@ -39,7 +42,8 @@ def test_get_solution_distance(dataset):
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
 def test_write_solution(dataset):
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP(dataset)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     tsp.solveNearestNeighbor()
     tsp.writeSolution("test_solution.txt")
     with open("test_solution.txt", "r") as file:
@@ -56,7 +60,8 @@ def test_city_class():
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
 def test_multiple_runs(dataset):
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP(dataset)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     distances = []
     for _ in range(5):
         distance = tsp.solveNearestNeighbor()
@@ -67,22 +72,25 @@ def test_multiple_runs(dataset):
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
 def test_solve_nearest_neighbor_consistency(dataset):
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP(dataset)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     distance1 = tsp.solveNearestNeighbor()
     distance2 = tsp.solveNearestNeighbor()
     assert distance1 == distance2, f"Distances {distance1} and {distance2} do not match for dataset {dataset}"
 
 def test_empty_dataset():
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP("empty.tsp")
+    dataset_path = os.path.join("data", "empty.tsp")
+    tsp = delivery_optimizer.TSP(dataset_path)
     distance = tsp.solveNearestNeighbor()
     assert distance == 0, "Distance should be 0 for an empty dataset"
 
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
 def test_tsp_reset(dataset):
     delivery_optimizer.setVisualizationCallback(None)
-    tsp = delivery_optimizer.TSP(dataset)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     distance1 = tsp.solveNearestNeighbor()
-    tsp = delivery_optimizer.TSP(dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
     distance2 = tsp.solveNearestNeighbor()
     assert distance1 == distance2, f"Distances {distance1} and {distance2} do not match after reset for dataset {dataset}"
