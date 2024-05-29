@@ -25,7 +25,7 @@ all: $(TARGET) $(EXE)
 
 # Building the pybind module
 $(TARGET): $(SRC_PYBIND) $(HEAD)
-	$(CXX) $(CXXFLAGS) $(SRC_PYBIND) -I$(INCLUDEDIR) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(SRC_PYBIND) -I$(INCLUDEDIR) -DBUILD_PYBIND_MODULE -o $(TARGET)
 
 # Building the executable
 $(EXE): $(SRC_CPP) $(HEAD)
@@ -37,12 +37,12 @@ $(EXE): $(SRC_CPP) $(HEAD)
 # Clean the object files and the executable
 clean:
 	rm -f $(TARGET) $(EXE) $(CLEANEXTS) $(BINDIR)/*
-	rm -rf __pycache__ .pytest_cache 
-
+	rm -rf __pycache__ .pytest_cache ./src/python/__pycache__
+	rm *.html
 
 # Save the source and header files
 save:
-	cp $(SRC_CPP) $(SRC_PYBIND) $(HEAD) $(SAVEDIR)
+	cp $(SRC_CPP) $(SRC_PYBIND) $(HEAD) ./src/python/* test_delivery_optimizer.py $(SAVEDIR)
 
 # Restore files from backup
 restore:
@@ -55,4 +55,3 @@ test: $(TARGET)
 # Run python interface
 run: $(TARGET)
 	PYTHONPATH=$(BINDIR) python3 src/python/interface.py
-	firefox Optimized_Route.html

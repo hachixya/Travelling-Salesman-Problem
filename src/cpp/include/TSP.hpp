@@ -2,6 +2,7 @@
 
 #include <deque>
 #include "City.hpp"
+#include <functional>
 
 class TSP {
 public:
@@ -33,3 +34,4 @@ private:
 
 void copyCityDeque(std::deque<City*>& source, std::deque<City*>& dest);
 void endOptimization([[maybe_unused]] int signum);
+void setVisualizationCallback(std::function<void(int, TSP&)> callback);

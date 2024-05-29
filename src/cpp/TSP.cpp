@@ -7,8 +7,17 @@
 #include <csignal>
 #include <climits>
 #include <chrono>
+#ifdef BUILD_PYBIND_MODULE
+#include <pybind11/pybind11.h>
+#endif
 
 int done = 0;
+
+std::function<void(int, TSP&)> visualizationCallback = nullptr;
+
+void setVisualizationCallback(std::function<void(int, TSP&)> callback) {
+    visualizationCallback = callback;
+}
 
 TSP::TSP(const char* filename) {
     numCities = readFile(filename);
@@ -137,6 +146,13 @@ int TSP::solveNearestNeighbor() {
             bestStartDistance = lastRun;
             std::cout << "Writing solution " << bestStartDistance << std::endl;
             writeSolution("nearest_neighbor_solution.txt");
+
+            // Only update visualization when running as a Python module
+            #ifdef BUILD_PYBIND_MODULE
+            if (visualizationCallback) {
+                visualizationCallback(bestStartDistance, *this);
+            }
+            #endif
         }
     }
 
@@ -145,6 +161,13 @@ int TSP::solveNearestNeighbor() {
         bestStartDistance = totalDistance;
         std::cout << "Writing solution " << totalDistance << std::endl;
         writeSolution("nearest_neighbor_solution.txt");
+
+        // Only update visualization when running as a Python module
+        #ifdef BUILD_PYBIND_MODULE
+        if (visualizationCallback) {
+            visualizationCallback(totalDistance, *this);
+        }
+        #endif
     }
 
     auto end = std::chrono::high_resolution_clock::now();
