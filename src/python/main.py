@@ -21,8 +21,10 @@ def main():
 
     tsp = delivery_optimizer.TSP(dataset_path)
     delivery_optimizer.setVisualizationCallback(update_visualization)
-
-    algorithm = input("Choose algorithm to solve TSP:\n1. Nearest Neighbor\n2. Genetic Algorithm\n").strip()
+    if choice == "yes":
+        algorithm = input("Choose algorithm to solve TSP:\n1. Nearest Neighbor\n2. Genetic Algorithm\n3. Brute Force\n").strip()
+    else:
+        algorithm = input("Choose algorithm to solve TSP:\n1. Nearest Neighbor\n2. Genetic Algorithm\n").strip()
     
     if algorithm == "1":
         print("Solving TSP using Nearest Neighbor algorithm...")
@@ -34,8 +36,11 @@ def main():
         crossover_rate = float(input("Enter crossover rate (0 to 1): ").strip())
         mutation_rate = float(input("Enter mutation rate (0 to 1): ").strip())
         tsp.solveGeneticAlgorithm(population_size, generations, crossover_rate, mutation_rate)
+    elif algorithm == "3" and choice == "yes":
+        print("Solving TSP using Brute Force algorithm...")
+        tsp.solveBruteForce()
     else:
-        print("Invalid choice. Exiting.")
+        print("Invalid choice or Brute Force is not available for pre-defined datasets. Exiting.")
         return
 
     distance = tsp.getSolutionDistance()

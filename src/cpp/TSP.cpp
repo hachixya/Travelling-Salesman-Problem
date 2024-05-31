@@ -126,6 +126,12 @@ void TSP::bruteForce(std::deque<City*>& bestPath, int& minDistance, int citiesLe
             minDistance = currentDistance;
             std::cout << minDistance << std::endl;
             copyCityDeque(solution, bestPath);
+            #ifdef BUILD_PYBIND_MODULE
+            if (visualizationCallback) {
+                std::cout << "Visualization callback bruteforce" << std::endl;
+                visualizationCallback(currentDistance, *this);
+            }
+            #endif
         }
         bruteForce(bestPath, minDistance, citiesLeft - 1);
     }
