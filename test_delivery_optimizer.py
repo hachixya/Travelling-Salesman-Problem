@@ -1,6 +1,7 @@
 import os
 import delivery_optimizer
 import pytest
+from utils import verify_solution, read_tsp_file, read_solution_file
 
 # Known optimal distances for the datasets
 known_optimal = {
@@ -29,6 +30,9 @@ def test_solve_nearest_neighbor(dataset, optimal):
     tsp = delivery_optimizer.TSP(dataset_path)
     distance = tsp.solveNearestNeighbor()
     assert distance <= max_acceptable_distance(optimal), f"Distance {distance} exceeds acceptable limit {max_acceptable_distance(optimal)} for dataset {dataset}"
+    tsp.writeSolution("test_solution.txt")
+    if(dataset != "tiny.tsp"):
+        assert verify_solution(dataset_path, "test_solution.txt"), "Calculated solution does not match expected distance"
 
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
 def test_get_solution_distance(dataset):
@@ -49,6 +53,8 @@ def test_write_solution(dataset):
     with open("test_solution.txt", "r") as file:
         first_line = file.readline().strip()
         assert first_line.isdigit(), "First line of the solution file should be a number representing the total distance"
+    if(dataset != "tiny.tsp"):    
+        assert verify_solution(dataset_path, "test_solution.txt"), "Calculated solution does not match expected distance"
 
 def test_city_class():
     city = delivery_optimizer.City(1, 10, 20, 0, False)
