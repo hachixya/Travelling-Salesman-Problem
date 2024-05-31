@@ -1,8 +1,8 @@
 .vscode/
 bin/*
 save/*
-nearest_neighbor_solution.txt
 *.html
 *.txt
 TODO
 test*
+!requirements.txt
