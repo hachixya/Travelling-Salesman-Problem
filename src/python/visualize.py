@@ -20,6 +20,8 @@ def plot_route(route, title="Optimized Route"):
 def update_visualization(distance, tsp):
     print(f"Updating visualization for distance: {distance}")
     route = [tsp.getCity(i) for i in range(tsp.getNumberOfCities())]
+    # Ensure the route is circular by adding the start point at the end
+    route.append(route[0])
     x_coords = [city.getX() for city in route]
     y_coords = [city.getY() for city in route]
     frames.append((x_coords, y_coords, [city.getId() for city in route], distance))

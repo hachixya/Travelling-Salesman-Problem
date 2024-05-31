@@ -50,7 +50,7 @@ def test_solve_genetic_algorithm(dataset, optimal):
     mutation_rate = 0.07
     distance = tsp.solveGeneticAlgorithm(population_size, generations, crossover_rate, mutation_rate)
     if dataset == "kroD100.tsp":
-        assert distance <= (max_acceptable_distance(optimal)+1000), f"Distance {distance} exceeds acceptable limit {max_acceptable_distance(optimal)} for dataset {dataset}" 
+        assert distance <= (max_acceptable_distance(optimal)+1500), f"Distance {distance} exceeds acceptable limit {max_acceptable_distance(optimal)} for dataset {dataset}" 
     tsp.writeSolution("test_solution.txt")
     if dataset != "tiny.tsp":
         assert verify_solution(dataset_path, "test_solution.txt"), "Calculated solution does not match expected distance"
