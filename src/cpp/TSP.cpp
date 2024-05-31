@@ -1,4 +1,5 @@
 #include "TSP.hpp"
+#include "Tree.hpp"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -23,6 +24,7 @@ void setVisualizationCallback(std::function<void(int, TSP&)> callback) {
 
 TSP::TSP(const char* filename) {
     numCities = readFile(filename);
+    buildAllNeighborLists(); // Build neighbor lists for all cities
 }
 
 TSP::TSP(const TSP& source) {
@@ -33,6 +35,7 @@ TSP::TSP(const TSP& source) {
         solution.push_back(new City(*city));
     }
     numCities = source.numCities;
+    buildAllNeighborLists(); // Build neighbor lists for all cities
 }
 
 TSP::~TSP() {
@@ -316,9 +319,9 @@ int TSP::getSolutionDistance() const {
 }
 
 void TSP::displayNeighborLists() const {
-    for (int i = 0; i < numCities; ++i) {
-        std::cout << "LIST " << i << std::endl;
-        solution[i]->displayNeighborList();
+    for (auto city : originalList) {
+        std::cout << "Neighbors of city " << city->getId() << ": ";
+        city->displayNeighborList();
     }
 }
 
@@ -350,4 +353,10 @@ void copyCityDeque(std::deque<City*>& source, std::deque<City*>& dest) {
 void endOptimization([[maybe_unused]] int signum) {
     std::cout << "\nOut of time\n";
     done = 1;
+}
+
+void TSP::buildAllNeighborLists() {
+    for (auto city : originalList) {
+        city->buildNeighborList(originalList, numCities);
+    }
 }

@@ -26,6 +26,7 @@ public:
 private:
     void bruteForce(std::deque<City*>& bestPath, int& minDistance, int citiesLeft);
     void rotateSolution(int pos);
+    void buildAllNeighborLists();
 
     std::deque<City*> originalList;
     std::deque<City*> solution;

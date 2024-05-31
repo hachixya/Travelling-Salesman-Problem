@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
     std::srand(std::time(0));
 
     TSP tsp(filepath.c_str());
+    //tsp.displayNeighborLists();
     tsp.solveNearestNeighbor();
 
     return 0;
