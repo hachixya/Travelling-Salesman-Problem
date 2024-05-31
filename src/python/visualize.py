@@ -24,7 +24,7 @@ def update_visualization(distance, tsp):
     y_coords = [city.getY() for city in route]
     frames.append((x_coords, y_coords, [city.getId() for city in route], distance))
 
-def animate_route(frames):
+def animate_route(frames, interval=1000):
     fig, ax = plt.subplots(figsize=(10, 6))
     line, = ax.plot([], [], 'bo-', markersize=5)
     text = ax.text(0.02, 0.95, '', transform=ax.transAxes)
@@ -52,7 +52,7 @@ def animate_route(frames):
 
         return line, text, *annotation
 
-    ani = animation.FuncAnimation(fig, update, frames=frames, init_func=init, blit=True, repeat=False, interval=1000)
+    ani = animation.FuncAnimation(fig, update, frames=frames, init_func=init, blit=True, repeat=False, interval=interval)
     plt.xlabel("X Coordinate")
     plt.ylabel("Y Coordinate")
     plt.grid(True)

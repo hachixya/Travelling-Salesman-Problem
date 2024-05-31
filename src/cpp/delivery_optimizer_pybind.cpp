@@ -18,6 +18,7 @@ PYBIND11_MODULE(delivery_optimizer, m) {
         .def(py::init<const char*>())
         .def("solveNearestNeighbor", &TSP::solveNearestNeighbor)
         .def("solveBruteForce", &TSP::solveBruteForce)
+        .def("solveGeneticAlgorithm", &TSP::solveGeneticAlgorithm)
         .def("getSolutionDistance", &TSP::getSolutionDistance)
         .def("writeSolution", &TSP::writeSolution)
         .def("getNumberOfCities", &TSP::getNumberOfCities)

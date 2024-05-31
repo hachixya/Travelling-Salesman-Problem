@@ -22,13 +22,29 @@ def main():
     tsp = delivery_optimizer.TSP(dataset_path)
     delivery_optimizer.setVisualizationCallback(update_visualization)
 
-    print("Solving TSP using Nearest Neighbor algorithm...")
-    tsp.solveNearestNeighbor()
+    algorithm = input("Choose algorithm to solve TSP:\n1. Nearest Neighbor\n2. Genetic Algorithm\n").strip()
+    
+    if algorithm == "1":
+        print("Solving TSP using Nearest Neighbor algorithm...")
+        tsp.solveNearestNeighbor()
+    elif algorithm == "2":
+        print("Solving TSP using Genetic Algorithm...")
+        population_size = int(input("Enter population size: ").strip())
+        generations = int(input("Enter number of generations: ").strip())
+        crossover_rate = float(input("Enter crossover rate (0 to 1): ").strip())
+        mutation_rate = float(input("Enter mutation rate (0 to 1): ").strip())
+        tsp.solveGeneticAlgorithm(population_size, generations, crossover_rate, mutation_rate)
+    else:
+        print("Invalid choice. Exiting.")
+        return
 
     distance = tsp.getSolutionDistance()
     print(f"Optimized route distance: {distance}")
 
-    animate_route(frames)
+    if algorithm == "2":
+        animate_route(frames, interval=10)  # Faster animation for genetic algorithm
+    else:
+        animate_route(frames)
 
 if __name__ == "__main__":
     try:

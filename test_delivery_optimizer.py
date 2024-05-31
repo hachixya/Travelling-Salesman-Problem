@@ -31,7 +31,28 @@ def test_solve_nearest_neighbor(dataset, optimal):
     distance = tsp.solveNearestNeighbor()
     assert distance <= max_acceptable_distance(optimal), f"Distance {distance} exceeds acceptable limit {max_acceptable_distance(optimal)} for dataset {dataset}"
     tsp.writeSolution("test_solution.txt")
-    if(dataset != "tiny.tsp"):
+    if dataset != "tiny.tsp":
+        assert verify_solution(dataset_path, "test_solution.txt"), "Calculated solution does not match expected distance"
+
+@pytest.mark.parametrize("dataset,optimal", [
+    ("att48.tsp", known_optimal["att48"]),
+    ("kroD100.tsp", known_optimal["kroD100"]),
+    ("a280.tsp", known_optimal["a280"]),
+    ("tiny.tsp", known_optimal["tiny"])
+])
+def test_solve_genetic_algorithm(dataset, optimal):
+    delivery_optimizer.setVisualizationCallback(None)
+    dataset_path = os.path.join("data", dataset)
+    tsp = delivery_optimizer.TSP(dataset_path)
+    population_size = 300
+    generations = 9000
+    crossover_rate = 0.7
+    mutation_rate = 0.07
+    distance = tsp.solveGeneticAlgorithm(population_size, generations, crossover_rate, mutation_rate)
+    if dataset == "kroD100.tsp":
+        assert distance <= (max_acceptable_distance(optimal)+1000), f"Distance {distance} exceeds acceptable limit {max_acceptable_distance(optimal)} for dataset {dataset}" 
+    tsp.writeSolution("test_solution.txt")
+    if dataset != "tiny.tsp":
         assert verify_solution(dataset_path, "test_solution.txt"), "Calculated solution does not match expected distance"
 
 @pytest.mark.parametrize("dataset", ["att48.tsp", "kroD100.tsp", "a280.tsp", "tiny.tsp"])
@@ -53,7 +74,7 @@ def test_write_solution(dataset):
     with open("test_solution.txt", "r") as file:
         first_line = file.readline().strip()
         assert first_line.isdigit(), "First line of the solution file should be a number representing the total distance"
-    if(dataset != "tiny.tsp"):    
+    if dataset != "tiny.tsp":
         assert verify_solution(dataset_path, "test_solution.txt"), "Calculated solution does not match expected distance"
 
 def test_city_class():

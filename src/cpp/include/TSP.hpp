@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <vector>
 #include "City.hpp"
 #include <functional>
 
@@ -13,6 +14,7 @@ public:
     void writeSolution(const char* fileName);
     int solveBruteForce();
     int solveNearestNeighbor();
+    int solveGeneticAlgorithm(int populationSize, int generations, double crossoverRate, double mutationRate);
     int solveNearestNeighborBasic(int startIndex);
     int optimizeTwoChange();
     int optimizeTwoOpt(int bestDistance);
@@ -26,7 +28,11 @@ public:
 private:
     void bruteForce(std::deque<City*>& bestPath, int& minDistance, int citiesLeft);
     void rotateSolution(int pos);
-    void buildAllNeighborLists();
+    void generateInitialPopulation(std::vector<std::deque<City*>>& population, int populationSize);
+    std::deque<City*> selectParent(const std::vector<std::deque<City*>>& population);
+    std::deque<City*> crossover(const std::deque<City*>& parent1, const std::deque<City*>& parent2);
+    void mutate(std::deque<City*>& individual);
+    int calculateFitness(const std::deque<City*>& individual);
 
     std::deque<City*> originalList;
     std::deque<City*> solution;

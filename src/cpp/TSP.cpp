@@ -1,5 +1,4 @@
 #include "TSP.hpp"
-#include "Tree.hpp"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -9,10 +8,12 @@
 #include <climits>
 #include <chrono>
 #include <algorithm>
+#include <random>
 
 #ifdef BUILD_PYBIND_MODULE
 #include <pybind11/pybind11.h>
 #endif
+#include <unordered_set>
 
 int done = 0;
 
@@ -24,7 +25,6 @@ void setVisualizationCallback(std::function<void(int, TSP&)> callback) {
 
 TSP::TSP(const char* filename) {
     numCities = readFile(filename);
-    buildAllNeighborLists(); // Build neighbor lists for all cities
 }
 
 TSP::TSP(const TSP& source) {
@@ -35,7 +35,6 @@ TSP::TSP(const TSP& source) {
         solution.push_back(new City(*city));
     }
     numCities = source.numCities;
-    buildAllNeighborLists(); // Build neighbor lists for all cities
 }
 
 TSP::~TSP() {
@@ -289,6 +288,163 @@ int TSP::optimizeTwoOpt(int currentBestDistance) {
     return bestDistance;
 }
 
+int TSP::solveGeneticAlgorithm(int populationSize, int generations, double crossoverRate, double mutationRate) {
+    if (numCities == 0) return 0;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<std::deque<City*>> population;
+    generateInitialPopulation(population, populationSize);
+
+    int bestDistance = INT_MAX;
+    std::deque<City*> bestSolution;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    for (int generation = 0; generation < generations; ++generation) {
+        std::vector<std::deque<City*>> newPopulation;
+
+        for (int i = 0; i < populationSize / 2; ++i) {
+            std::deque<City*> parent1 = selectParent(population);
+            std::deque<City*> parent2 = selectParent(population);
+
+            std::deque<City*> offspring1 = parent1;
+            std::deque<City*> offspring2 = parent2;
+
+            if (dis(gen) < crossoverRate) {
+                offspring1 = crossover(parent1, parent2);
+                offspring2 = crossover(parent2, parent1);
+            }
+
+            if (dis(gen) < mutationRate) {
+                mutate(offspring1);
+            }
+
+            if (dis(gen) < mutationRate) {
+                mutate(offspring2);
+            }
+
+            newPopulation.push_back(offspring1);
+            newPopulation.push_back(offspring2);
+        }
+
+        population = newPopulation;
+
+        for (const auto& individual : population) {
+            int distance = calculateFitness(individual);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestSolution = individual;
+
+                std::cout << "New best distance: " << bestDistance << std::endl;
+                solution = bestSolution;
+                writeSolution("genetic_algorithm_solution.txt");
+
+                #ifdef BUILD_PYBIND_MODULE
+                if (visualizationCallback) {
+                    visualizationCallback(bestDistance, *this);
+                }
+                #endif
+            }
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+
+    std::cout << "Best path distance: " << bestDistance << std::endl;
+    std::cout << "Best path: ";
+    for (auto city : bestSolution) {
+        std::cout << city->getId() << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
+
+    return bestDistance;
+}
+
+void TSP::generateInitialPopulation(std::vector<std::deque<City*>>& population, int populationSize) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    for (int i = 0; i < populationSize; ++i) {
+        std::deque<City*> individual = originalList;
+        std::shuffle(individual.begin(), individual.end(), gen);
+        population.push_back(individual);
+    }
+}
+
+
+std::deque<City*> TSP::selectParent(const std::vector<std::deque<City*>>& population) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, population.size() - 1);
+
+    std::deque<City*> best = population[dis(gen)];
+    for (int i = 0; i < 2; ++i) {
+        std::deque<City*> candidate = population[dis(gen)];
+        if (calculateFitness(candidate) < calculateFitness(best)) {
+            best = candidate;
+        }
+    }
+    return best;
+}
+
+std::deque<City*> TSP::crossover(const std::deque<City*>& parent1, const std::deque<City*>& parent2) {
+    std::deque<City*> child;
+    std::unordered_set<int> visited;
+
+    // Randomly select a subset from parent1 to initialize the child
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, parent1.size() - 1);
+
+    int start = dis(gen);
+    int end = dis(gen);
+    if (start > end) std::swap(start, end);
+
+    std::deque<City*>::size_type start_idx = static_cast<std::deque<City*>::size_type>(start);
+    std::deque<City*>::size_type end_idx = static_cast<std::deque<City*>::size_type>(end);
+
+    for (std::deque<City*>::size_type i = start_idx; i <= end_idx; ++i) {
+        child.push_back(parent1[i]);
+        visited.insert(parent1[i]->getId());
+    }
+
+    // Fill the remaining positions with the cities from parent2
+    for (std::deque<City*>::size_type i = 0; i < parent2.size(); ++i) {
+        if (visited.find(parent2[i]->getId()) == visited.end()) {
+            child.push_back(parent2[i]);
+        }
+    }
+
+    return child;
+}
+
+
+
+void TSP::mutate(std::deque<City*>& individual) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, individual.size() - 1);
+
+    int index1 = dis(gen);
+    int index2 = dis(gen);
+    std::swap(individual[index1], individual[index2]);
+}
+
+
+int TSP::calculateFitness(const std::deque<City*>& individual) {
+    int totalDistance = 0;
+    for (size_t i = 0; i < individual.size() - 1; ++i) {
+        totalDistance += individual[i]->distanceTo(individual[i + 1]);
+    }
+    totalDistance += individual.back()->distanceTo(individual.front());
+    return totalDistance;
+}
+
+
 int TSP::swapCities(int i, int k) {
     if (numCities == 0) return 0;
 
@@ -319,9 +475,9 @@ int TSP::getSolutionDistance() const {
 }
 
 void TSP::displayNeighborLists() const {
-    for (auto city : originalList) {
-        std::cout << "Neighbors of city " << city->getId() << ": ";
-        city->displayNeighborList();
+    for (int i = 0; i < numCities; ++i) {
+        std::cout << "LIST " << i << std::endl;
+        solution[i]->displayNeighborList();
     }
 }
 
@@ -353,10 +509,4 @@ void copyCityDeque(std::deque<City*>& source, std::deque<City*>& dest) {
 void endOptimization([[maybe_unused]] int signum) {
     std::cout << "\nOut of time\n";
     done = 1;
-}
-
-void TSP::buildAllNeighborLists() {
-    for (auto city : originalList) {
-        city->buildNeighborList(originalList, numCities);
-    }
 }
