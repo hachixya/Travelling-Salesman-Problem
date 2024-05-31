@@ -7,6 +7,8 @@
 #include <csignal>
 #include <climits>
 #include <chrono>
+#include <algorithm>
+
 #ifdef BUILD_PYBIND_MODULE
 #include <pybind11/pybind11.h>
 #endif
@@ -66,6 +68,9 @@ int TSP::readFile(const char* filename) {
 
 void TSP::writeSolution(const char* fileName) {
     int distance = getSolutionDistance();
+
+    std::cout << "Writing solution to " << fileName << std::endl;
+    std::cout << "Distance: " << distance << std::endl;
     std::ofstream file(fileName);
 
     if (file.is_open()) {
@@ -135,7 +140,6 @@ int TSP::solveNearestNeighbor() {
     auto start = std::chrono::high_resolution_clock::now();
 
     solution.clear();
-    int totalDistance = 0;
     int bestStartDistance = INT_MAX;
     int lastRun = 0;
 
@@ -150,24 +154,12 @@ int TSP::solveNearestNeighbor() {
             // Only update visualization when running as a Python module
             #ifdef BUILD_PYBIND_MODULE
             if (visualizationCallback) {
+                std::cout << "Visualization callback neighbor" << std::endl;
                 visualizationCallback(bestStartDistance, *this);
             }
             #endif
+            bestStartDistance = optimizeTwoOpt(bestStartDistance);
         }
-    }
-
-    totalDistance = getSolutionDistance();
-    if (bestStartDistance > totalDistance) {
-        bestStartDistance = totalDistance;
-        std::cout << "Writing solution " << totalDistance << std::endl;
-        writeSolution("nearest_neighbor_solution.txt");
-
-        // Only update visualization when running as a Python module
-        #ifdef BUILD_PYBIND_MODULE
-        if (visualizationCallback) {
-            visualizationCallback(totalDistance, *this);
-        }
-        #endif
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -176,6 +168,7 @@ int TSP::solveNearestNeighbor() {
     std::cout << "Best path distance: " << bestStartDistance << std::endl;
     std::cout << "Best path: ";
     for (auto city : solution) {
+        std::cout << "=> ";
         std::cout << city->getId() << " ";
     }
     std::cout << std::endl;
@@ -251,25 +244,46 @@ int TSP::optimizeTwoChange() {
     return minDistance;
 }
 
-int TSP::optimizeTwoOpt() {
+int TSP::optimizeTwoOpt(int currentBestDistance) {
     if (numCities == 0) return 0;
 
-    std::deque<City*> newPath;
-    int minDistance = getSolutionDistance();
-    int k = 0;
+    int bestDistance = currentBestDistance;
+    bool improvement = true;
+    std::cout << "Initial distance: " << bestDistance << std::endl;
 
-    for (int i = 1; i < numCities; ++i) {
-        k = 1;
-        fixPositions();
-        while (k <= 5 && solution[i]->distanceTo(solution[i]->getNeighbor(k)) < solution[i - 1]->distanceTo(solution[i])) {
-            swapCities(i, solution[i]->getNeighborPosition(k));
-            minDistance = getSolutionDistance();
-            ++k;
-            std::cout << minDistance << std::endl;
+    while (improvement) {
+        improvement = false;
+        for (int i = 1; i < numCities - 1; ++i) {
+            for (int j = i + 1; j < numCities; ++j) {
+                if (j - i == 1) continue;  // Skip adjacent edges
+
+                int newDistance = bestDistance - solution[i - 1]->distanceTo(solution[i])
+                                  - solution[j]->distanceTo(solution[(j + 1) % numCities])
+                                  + solution[i - 1]->distanceTo(solution[j])
+                                  + solution[i]->distanceTo(solution[(j + 1) % numCities]);
+
+                if (newDistance < bestDistance) {
+                    std::reverse(solution.begin() + i, solution.begin() + j + 1);
+                    bestDistance = newDistance;
+                    improvement = true;
+
+                    // Debug output to see improvement steps
+                    if (improvement) {
+                        std::cout << "Improved distance: " << bestDistance << std::endl;
+                        writeSolution("2opt_improved_solution.txt");
+                        #ifdef BUILD_PYBIND_MODULE
+                        if (visualizationCallback) {
+                            std::cout << "Visualization callback two opt" << std::endl;
+                            visualizationCallback(bestDistance, *this);
+                        }
+                        #endif
+                    }
+                }
+            }
         }
-        fixPositions();
     }
-    return minDistance;
+
+    return bestDistance;
 }
 
 int TSP::swapCities(int i, int k) {

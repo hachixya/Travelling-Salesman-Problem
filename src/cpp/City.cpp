@@ -14,6 +14,7 @@ City::City(const City &source)
 City::~City() {}
 
 int City::distanceTo(const City *city) const {
+    if (!city) return 0;
     float dx = static_cast<float>(city->getX() - x);
     float dy = static_cast<float>(city->getY() - y);
     return static_cast<int>(std::round(std::sqrt(dx * dx + dy * dy)));
