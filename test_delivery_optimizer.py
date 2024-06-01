@@ -13,7 +13,7 @@ known_optimal = {
 
 # Maximum acceptable distance (5% gap)
 def max_acceptable_distance(optimal):
-    return optimal * 1.05
+    return optimal * 1.04
 
 # Tolerance for floating point comparisons
 tolerance = 1e-2

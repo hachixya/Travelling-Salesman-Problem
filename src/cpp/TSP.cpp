@@ -176,7 +176,6 @@ int TSP::solveNearestNeighbor() {
     std::cout << "Best path distance: " << bestStartDistance << std::endl;
     std::cout << "Best path: ";
     for (auto city : solution) {
-        std::cout << "=> ";
         std::cout << city->getId() << " ";
     }
     std::cout << std::endl;

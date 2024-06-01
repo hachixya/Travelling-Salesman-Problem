@@ -4,6 +4,8 @@
 
 DeliveryOptimizer is a tool designed to solve the Traveling Salesman Problem (TSP) using various algorithms, including Nearest Neighbor with 2-opt optimization, Genetic Algorithm, and Brute Force. The tool supports manual placement of points and visualization of the optimized route.
 
+![animation_and_place_points](./assets/images/animation_and_place_points.gif)
+
 ## Features
 
 - **Manual Point Placement**: Allows users to manually place points on a grid.
@@ -102,7 +104,7 @@ DeliveryOptimizer is a tool designed to solve the Traveling Salesman Problem (TS
 - The optimized route will be displayed in an animated plot.
 - For the Genetic Algorithm, the animation speed is increased for faster viewing.
 
-![a280_TSP](./assets/images/a280.png)
+![a280_TSP](./assets/images/a280.gif)
 
 ## Tests
 
@@ -111,6 +113,14 @@ DeliveryOptimizer is a tool designed to solve the Traveling Salesman Problem (TS
     ```bash
     make test
     ```
+
+## Known optimial for each dataset
+
+| Set Name | Known Optimal
+|----------|---------------
+| att48 | 33523.71
+| kroD100 | 21294.29
+| a280 | 2586.77
 
 ## License
 
