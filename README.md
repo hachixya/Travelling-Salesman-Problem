@@ -1,8 +1,8 @@
-# DeliveryOptimizer (Traveling Salesman Problem - TSP)
+# DeliveryOptimizer (Travelling Salesman Problem - TSP)
 
 ## Overview
 
-DeliveryOptimizer is a tool designed to solve the Traveling Salesman Problem (TSP) using various algorithms, including Nearest Neighbor with 2-opt optimization, Genetic Algorithm, and Brute Force. The tool supports manual placement of points and visualization of the optimized route.
+DeliveryOptimizer is a tool designed to solve the Travelling Salesman Problem (TSP) using various algorithms, including Nearest Neighbor with 2-opt optimization, Genetic Algorithm, and Brute Force. The tool supports manual placement of points and visualization of the optimized route.
 
 ![animation_and_place_points](./assets/images/animation_and_place_points.gif)
 
